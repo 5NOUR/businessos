@@ -31,7 +31,7 @@ import { SubscriptionsModule } from "./subscriptions/subscriptions.module";
 import { PlansModule } from "./plans/plans.module";
 import { ThrottlerModule } from "@nestjs/throttler";
 import { RedisModule } from "./redis/redis.module";
-import { HealthController } from "./health/health.controller";
+import { HealthModule } from "./health/health.module";
 
 @Module({
   imports: [
@@ -72,7 +72,7 @@ import { HealthController } from "./health/health.controller";
     PlansModule,
     SubscriptionsModule,
     RedisModule,
-    HealthController,
+    HealthModule,
   ],
 })
 export class AppModule {}
