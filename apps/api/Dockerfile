@@ -14,6 +14,9 @@ RUN npm install -g pnpm@11.25.0 && pnpm install --frozen-lockfile
 COPY apps/api apps/api
 COPY apps/api/prisma apps/api/prisma
 
+# توليد Prisma Client قبل البناء
+RUN pnpm --filter @businessos/api exec prisma generate
+
 # بناء التطبيق
 RUN pnpm --filter @businessos/api build
 
@@ -27,8 +30,8 @@ COPY --from=build /app/apps/api/dist ./dist
 COPY --from=build /app/apps/api/package.json ./package.json
 COPY --from=build /app/apps/api/prisma ./prisma
 
-# توليد Prisma Client
-RUN npx prisma generate
+# توليد Prisma Client في مرحلة الإنتاج أيضًا (احتياطي)
+RUN pnpm --filter @businessos/api exec prisma generate
 
 EXPOSE 4000
 CMD ["node", "dist/main"]
