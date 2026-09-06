@@ -1,15 +1,17 @@
 import { render, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import App from "./App";
+import { useAuthStore } from "@/store/auth-store";
 
 describe("App", () => {
   beforeEach(() => {
-    // محاكاة localStorage لتوفير accessToken و currentOrgId
-    vi.spyOn(Storage.prototype, "getItem").mockImplementation((key) => {
-      if (key === "accessToken") return "test-token";
-      if (key === "currentOrgId") return "test-org";
-      return null;
+    // تعيين حالة المصادقة مباشرة لتجاوز صفحة تسجيل الدخول
+    useAuthStore.setState({
+      user: { id: "1", name: "Test User" },
+      accessToken: "test-token",
+      refreshToken: "test-refresh",
+      currentOrgId: "test-org",
     });
   });
 
@@ -21,7 +23,7 @@ describe("App", () => {
       </QueryClientProvider>,
     );
 
-    // انتظر حتى تظهر اللوحة الجانبية
+    // انتظر ظهور أي عنصر يحتوي على "BusinessOS"
     const elements = await screen.findAllByText("BusinessOS");
     expect(elements.length).toBeGreaterThan(0);
   });
