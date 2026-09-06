@@ -2,7 +2,7 @@
 FROM node:24-alpine AS build
 WORKDIR /app
 
-# نسخ كل المستودع (يشمل apps/packages/package.json...)
+# نسخ كل المستودع
 COPY . .
 
 # تفعيل pnpm
@@ -21,17 +21,11 @@ RUN pnpm --filter @businessos/api build
 FROM node:24-alpine
 WORKDIR /app
 
-# نسخ الملفات الضرورية
+# نسخ الملفات الضرورية فقط
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/apps/api/dist ./dist
 COPY --from=build /app/apps/api/package.json ./package.json
 COPY --from=build /app/apps/api/prisma ./prisma
-
-# تفعيل pnpm في الإنتاج
-RUN corepack enable && corepack prepare pnpm@11.25.0 --activate
-
-# توليد Prisma Client (احتياطي)
-RUN pnpm --filter @businessos/api exec prisma generate
 
 EXPOSE 4000
 CMD ["node", "dist/main"]
