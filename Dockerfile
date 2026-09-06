@@ -1,12 +1,12 @@
 # مرحلة البناء
-FROM node:24-alpine AS build
+FROM node:24-bookworm-slim AS build
 WORKDIR /app
 
 # نسخ كل المستودع
 COPY . .
 
-# تفعيل pnpm
-RUN corepack enable && corepack prepare pnpm@11.25.0 --activate
+# تثبيت pnpm
+RUN npm install -g pnpm@11.25.0
 
 # تثبيت جميع الاعتماديات
 RUN pnpm install --frozen-lockfile
@@ -18,11 +18,12 @@ RUN pnpm --filter @businessos/api exec prisma generate
 RUN pnpm --filter @businessos/api build
 
 # مرحلة الإنتاج
-FROM node:24-alpine
+FROM node:24-bookworm-slim
 WORKDIR /app
 
 # نسخ كل شيء من مرحلة البناء
 COPY --from=build /app /app
+
 
 EXPOSE 4000
 CMD ["node", "apps/api/dist/main.js"]
