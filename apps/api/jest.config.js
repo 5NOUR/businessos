@@ -3,10 +3,17 @@ module.exports = {
   rootDir: "src",
   testRegex: ".*\\.spec\\.ts$",
   transform: {
-    "^.+\\.(t|j)s$": ["ts-jest", { diagnostics: false }],
+    "^.+\\.(t|j)s$": "ts-jest",
   },
-  transformIgnorePatterns: ["node_modules/(?!(@nestjs/mapped-types)/)"],
   collectCoverageFrom: ["**/*.(t|j)s"],
   coverageDirectory: "../coverage",
   testEnvironment: "node",
+  setupFilesAfterEnv: ["<rootDir>/../jest.setup.ts"], // أضف هذا السطر
+  ignorePatterns: [
+    "dist",
+    "node_modules",
+    ".eslintrc.cjs",
+    "jest.config.js", // ← أضف
+    "jest.setup.ts", // ← أضف
+  ],
 };
