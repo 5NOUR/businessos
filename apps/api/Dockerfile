@@ -16,7 +16,7 @@ RUN pnpm exec prisma generate
 RUN pnpm build
 
 # إنشاء مجلد نشر يحتوي على ملفات الإنتاج فقط
-RUN pnpm --filter @businessos/api deploy --prod /deploy/api
+RUN pnpm --filter @businessos/api deploy --legacy --prod /deploy/api
 
 # مرحلة الإنتاج
 FROM node:20-alpine
