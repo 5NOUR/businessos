@@ -1,0 +1,16 @@
+{
+  "extends": "@businessos/config/tsconfig.base.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "incremental": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strictPropertyInitialization": false,
+    "noEmit": false,
+    "types": ["jest", "node"]
+  },
+  "include": ["src", "prisma/migrations/expenses"],
+  "exclude": ["node_modules", "dist"]
+}

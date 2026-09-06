@@ -1,0 +1,68 @@
+version: "3.8"
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: businessos-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: businessos
+      POSTGRES_PASSWORD: businessos
+      POSTGRES_DB: businessos
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - businessos-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: businessos-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - businessos-network
+
+  api:
+    build:
+      context: . # <-- الجذر
+      dockerfile: apps/api/Dockerfile
+    container_name: businessos-api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://businessos:businessos@postgres:5432/businessos?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: super-secret-change-in-production
+      REFRESH_TOKEN_SECRET: refresh-secret-change
+      PORT: 4000
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "4000:4000"
+    networks:
+      - businessos-network
+
+  web:
+    build:
+      context: . # <-- الجذر
+      dockerfile: apps/web/Dockerfile
+    container_name: businessos-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+    networks:
+      - businessos-network
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  businessos-network:
+    driver: bridge

@@ -1,0 +1,30 @@
+{
+  "common": {
+    "dashboard": "Dashboard",
+    "customers": "Customers",
+    "leads": "Leads",
+    "products": "Products",
+    "suppliers": "Suppliers",
+    "purchases": "Purchases",
+    "orders": "Orders",
+    "invoices": "Invoices",
+    "employees": "Employees",
+    "projects": "Projects",
+    "reports": "Reports",
+    "search": "Search",
+    "finance": "Finance",
+    "logout": "Logout",
+    "profile": "Profile",
+    "auditLogs": "Audit Logs",
+    "subscription": "Subscription" 
+  },
+  "dashboard": {
+    "revenue": "Revenue",
+    "expenses": "Expenses",
+    "profit": "Profit",
+    "orders": "Orders",
+    "lowStock": "Low Stock Items",
+    "pendingTasks": "Pending Tasks",
+    "recentActivities": "Recent Activities"
+  }
+}

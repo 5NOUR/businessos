@@ -1,0 +1,30 @@
+{
+  "common": {
+    "dashboard": "لوحة المعلومات",
+    "customers": "العملاء",
+    "leads": "الفرص",
+    "products": "المنتجات",
+    "suppliers": "الموردون",
+    "purchases": "المشتريات",
+    "orders": "الطلبات",
+    "invoices": "الفواتير",
+    "employees": "الموظفون",
+    "projects": "المشاريع",
+    "reports": "التقارير",
+    "search": "بحث",
+    "finance": "المالية",
+    "logout": "تسجيل الخروج",
+    "profile": "الملف الشخصي",
+    "auditLogs": "سجل التدقيق",
+    "subscription": "الأشتراكات"
+  },
+  "dashboard": {
+    "revenue": "الإيرادات",
+    "expenses": "المصروفات",
+    "profit": "الربح",
+    "orders": "الطلبات",
+    "lowStock": "منتجات منخفضة المخزون",
+    "pendingTasks": "مهام معلقة",
+    "recentActivities": "النشاطات الأخيرة"
+  }
+}
