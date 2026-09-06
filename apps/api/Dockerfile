@@ -2,22 +2,16 @@
 FROM node:24-alpine AS build
 WORKDIR /app
 
-# تفعيل corepack وتثبيت pnpm
+# نسخ جميع ملفات المستودع
+COPY . .
+
+# تفعيل pnpm عبر corepack
 RUN corepack enable && corepack prepare pnpm@11.25.0 --activate
 
-# نسخ ملفات الجذر الضرورية
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/api/package.json apps/api/
-COPY packages/ packages/
-
-# تثبيت الاعتماديات
+# تثبيت جميع الاعتماديات (من الجذر)
 RUN pnpm install --frozen-lockfile
 
-# نسخ باقي الملفات
-COPY apps/api apps/api
-COPY apps/api/prisma apps/api/prisma
-
-# توليد Prisma Client قبل البناء
+# توليد Prisma Client
 RUN pnpm --filter @businessos/api exec prisma generate
 
 # بناء التطبيق
@@ -27,16 +21,16 @@ RUN pnpm --filter @businessos/api build
 FROM node:24-alpine
 WORKDIR /app
 
-# تفعيل corepack وتثبيت pnpm في مرحلة الإنتاج أيضًا
-RUN corepack enable && corepack prepare pnpm@11.25.0 --activate
-
-# نسخ ملفات الإنتاج
+# نسخ الملفات المبنية والاعتماديات
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/apps/api/dist ./dist
 COPY --from=build /app/apps/api/package.json ./package.json
 COPY --from=build /app/apps/api/prisma ./prisma
 
-# توليد Prisma Client في مرحلة الإنتاج (احتياطي)
+# تفعيل pnpm في مرحلة الإنتاج
+RUN corepack enable && corepack prepare pnpm@11.25.0 --activate
+
+# توليد Prisma Client (احتياطي)
 RUN pnpm --filter @businessos/api exec prisma generate
 
 EXPOSE 4000
