@@ -21,11 +21,8 @@ RUN pnpm --filter @businessos/api build
 FROM node:24-alpine
 WORKDIR /app
 
-# نسخ الملفات والاعتماديات من مرحلة البناء
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/apps/api/dist ./dist
-COPY --from=build /app/apps/api/package.json ./package.json
-COPY --from=build /app/apps/api/prisma ./prisma
+# نسخ كل شيء من مرحلة البناء
+COPY --from=build /app /app
 
 EXPOSE 4000
-CMD ["node", "dist/main"]
+CMD ["node", "apps/api/dist/main.js"]
