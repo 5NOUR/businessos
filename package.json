@@ -13,7 +13,8 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",
-    "prettier": "^3.0.0"
+    "prettier": "^3.0.0",
+    "packageManager": "pnpm@9.15.0"
   },
   "engines": {
     "node": ">=18.0.0",
