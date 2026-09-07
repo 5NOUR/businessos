@@ -7,6 +7,7 @@ import {
   LEAD_STAGES,
   Lead,
 } from "@/hooks/use-leads";
+import { useCustomers } from "@/hooks/use-customers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -32,6 +33,7 @@ interface LeadFormProps {
 export function LeadForm({ orgId, lead, onClose }: LeadFormProps) {
   const createMutation = useCreateLead(orgId);
   const updateMutation = lead ? useUpdateLead(orgId, lead.id) : null;
+  const { data: customers } = useCustomers(orgId, { page: 1, limit: 100 });
 
   const {
     register,
@@ -76,11 +78,18 @@ export function LeadForm({ orgId, lead, onClose }: LeadFormProps) {
         </h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium">Customer ID</label>
-            <Input
+            <label className="block text-sm font-medium">Customer</label>
+            <select
               {...register("customerId")}
-              placeholder="Enter customer ID"
-            />
+              className="w-full border rounded p-2"
+            >
+              <option value="">Select customer</option>
+              {customers?.items.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
             {errors.customerId && (
               <p className="text-red-500 text-xs">
                 {errors.customerId.message}

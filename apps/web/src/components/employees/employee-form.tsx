@@ -1,9 +1,11 @@
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useCreateEmployee } from "@/hooks/use-employees";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { apiFetch } from "@/lib/api";
 
 const employeeSchema = z.object({
   memberId: z.string().min(1, "Member ID is required"),
@@ -15,6 +17,15 @@ const employeeSchema = z.object({
 
 type EmployeeFormData = z.infer<typeof employeeSchema>;
 
+interface OrganizationMember {
+  id: string;
+  user?: {
+    name?: string;
+    email?: string;
+  };
+  role?: string;
+}
+
 interface EmployeeFormProps {
   orgId: string;
   onClose: () => void;
@@ -22,13 +33,44 @@ interface EmployeeFormProps {
 
 export function EmployeeForm({ orgId, onClose }: EmployeeFormProps) {
   const createMutation = useCreateEmployee(orgId);
+  const [members, setMembers] = useState<OrganizationMember[]>([]);
+  const [loadingMembers, setLoadingMembers] = useState(true);
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      try {
+        const response = await apiFetch<any>(
+          `/organizations/${orgId}/members`,
+          {
+            headers: { "x-organization-id": orgId },
+          },
+        );
+        // response قد يكون مصفوفة أو كائن يحتوي على items
+        const list = Array.isArray(response) ? response : response.items || [];
+        setMembers(list);
+      } catch (error) {
+        console.error("Failed to load members", error);
+        setMembers([]);
+      } finally {
+        setLoadingMembers(false);
+      }
+    };
+
+    fetchMembers();
+  }, [orgId]);
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<EmployeeFormData>({
     resolver: zodResolver(employeeSchema),
-    defaultValues: { memberId: "", position: "", department: "", joinDate: "" },
+    defaultValues: {
+      memberId: "",
+      position: "",
+      department: "",
+      joinDate: "",
+    },
   });
 
   const onSubmit = async (data: EmployeeFormData) => {
@@ -42,11 +84,21 @@ export function EmployeeForm({ orgId, onClose }: EmployeeFormProps) {
         <h2 className="text-lg font-bold mb-4">Add Employee</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium">Member ID</label>
-            <Input
+            <label className="block text-sm font-medium">Member</label>
+            <select
               {...register("memberId")}
-              placeholder="OrganizationMember ID"
-            />
+              className="w-full border rounded p-2"
+              disabled={loadingMembers}
+            >
+              <option value="">
+                {loadingMembers ? "Loading members..." : "Select member"}
+              </option>
+              {members.map((member) => (
+                <option key={member.id} value={member.id}>
+                  {member.user?.name || member.user?.email || member.id}
+                </option>
+              ))}
+            </select>
             {errors.memberId && (
               <p className="text-red-500 text-xs">{errors.memberId.message}</p>
             )}

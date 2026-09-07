@@ -1,14 +1,14 @@
-// import { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useCreateInvoice } from "@/hooks/use-invoices";
 import { useCustomers } from "@/hooks/use-customers";
+import { useProducts } from "@/hooks/use-products";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const itemSchema = z.object({
-  productId: z.string().optional(),
+  productId: z.string().min(1, "Product is required"),
   description: z.string().min(1, "Description required"),
   quantity: z.number().min(1),
   unitPrice: z.number().min(0),
@@ -34,6 +34,7 @@ interface InvoiceFormProps {
 export function InvoiceForm({ orgId, onClose }: InvoiceFormProps) {
   const createMutation = useCreateInvoice(orgId);
   const { data: customers } = useCustomers(orgId, { page: 1, limit: 100 });
+  const { data: products } = useProducts(orgId, { page: 1, limit: 100 });
 
   const {
     register,
@@ -91,6 +92,17 @@ export function InvoiceForm({ orgId, onClose }: InvoiceFormProps) {
             <label className="block text-sm font-medium">Items</label>
             {fields.map((field, index) => (
               <div key={field.id} className="flex gap-2 mb-2">
+                <select
+                  {...register(`items.${index}.productId`)}
+                  className="w-32 border rounded p-2"
+                >
+                  <option value="">Product</option>
+                  {products?.items.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
                 <Input
                   placeholder="Description"
                   {...register(`items.${index}.description`)}

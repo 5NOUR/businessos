@@ -1,125 +1,106 @@
-import { useState } from "react";
-import { useSuppliers, useDeleteSupplier } from "@/hooks/use-suppliers";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  useCreateSupplier,
+  useUpdateSupplier,
+  Supplier,
+} from "@/hooks/use-suppliers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "@/components/ui/table";
-import { Pencil, Trash2, Plus } from "lucide-react";
-import { SupplierForm } from "./supplier-form";
 
-export function SuppliersPage() {
-  const orgId = localStorage.getItem("currentOrgId");
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [showForm, setShowForm] = useState(false);
+const supplierSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email().optional().or(z.literal("")),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  notes: z.string().optional(),
+});
 
-  const { data, isLoading, isError } = useSuppliers(orgId, {
-    search,
-    page,
-    limit: 10,
+type SupplierFormData = z.infer<typeof supplierSchema>;
+
+interface SupplierFormProps {
+  orgId: string;
+  supplier?: Supplier | null;
+  onClose: () => void;
+}
+
+export function SupplierForm({ orgId, supplier, onClose }: SupplierFormProps) {
+  const createMutation = useCreateSupplier(orgId);
+  const updateMutation = supplier
+    ? useUpdateSupplier(orgId, supplier.id)
+    : null;
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SupplierFormData>({
+    resolver: zodResolver(supplierSchema),
+    defaultValues: supplier
+      ? {
+          name: supplier.name,
+          email: supplier.email || "",
+          phone: supplier.phone || "",
+          address: supplier.address || "",
+          notes: supplier.notes || "",
+        }
+      : {
+          name: "",
+          email: "",
+          phone: "",
+          address: "",
+          notes: "",
+        },
   });
-  const deleteMutation = useDeleteSupplier(orgId);
 
-  if (!orgId) return <div>Please select an organization</div>;
-  if (isLoading) return <div>Loading...</div>;
-  if (isError || !data)
-    return <div className="text-red-500">Error loading suppliers</div>;
+  const onSubmit = async (data: SupplierFormData) => {
+    if (supplier) {
+      await updateMutation!.mutateAsync(data);
+    } else {
+      await createMutation.mutateAsync(data);
+    }
+    onClose();
+  };
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Suppliers</h1>
-        <Button onClick={() => setShowForm(true)}>
-          <Plus className="h-4 w-4 mr-2" /> Add Supplier
-        </Button>
-      </div>
-
-      <div className="flex gap-2">
-        <Input
-          placeholder="Search suppliers..."
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-        />
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Supplier List ({data.meta.total})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.items.map((supplier) => (
-                <TableRow key={supplier.id}>
-                  <TableCell>{supplier.name}</TableCell>
-                  <TableCell>{supplier.email}</TableCell>
-                  <TableCell>{supplier.phone}</TableCell>
-                  <TableCell className="flex gap-2">
-                    <Button variant="ghost" size="sm">
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => deleteMutation.mutate(supplier.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {data.items.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center text-gray-500">
-                    No suppliers found
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-          <div className="flex justify-between items-center mt-4">
-            <Button
-              disabled={page === 1}
-              onClick={() => setPage(page - 1)}
-              variant="outline"
-            >
-              Previous
-            </Button>
-            <span>
-              Page {data.meta.page} of {data.meta.totalPages}
-            </span>
-            <Button
-              disabled={page >= data.meta.totalPages}
-              onClick={() => setPage(page + 1)}
-              variant="outline"
-            >
-              Next
-            </Button>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <h2 className="text-lg font-bold mb-4">
+          {supplier ? "Edit Supplier" : "Add Supplier"}
+        </h2>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium">Name</label>
+            <Input {...register("name")} />
+            {errors.name && (
+              <p className="text-red-500 text-xs">{errors.name.message}</p>
+            )}
           </div>
-        </CardContent>
-      </Card>
-
-      {showForm && (
-        <SupplierForm orgId={orgId} onClose={() => setShowForm(false)} />
-      )}
+          <div>
+            <label className="block text-sm font-medium">Email</label>
+            <Input type="email" {...register("email")} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Phone</label>
+            <Input {...register("phone")} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Address</label>
+            <Input {...register("address")} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Notes</label>
+            <Input {...register("notes")} />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit">{supplier ? "Update" : "Create"}</Button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

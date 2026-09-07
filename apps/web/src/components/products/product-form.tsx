@@ -17,8 +17,6 @@ const productSchema = z.object({
   costPrice: z.number().min(0),
   currentStock: z.number().min(0).optional(),
   minimumStock: z.number().min(0).optional(),
-  categoryId: z.string().optional(),
-  supplierId: z.string().optional(),
   imageUrl: z.string().optional(),
 });
 
@@ -48,8 +46,6 @@ export function ProductForm({ orgId, product, onClose }: ProductFormProps) {
           sellingPrice: product.sellingPrice,
           costPrice: product.costPrice,
           minimumStock: product.minimumStock,
-          categoryId: product.categoryId || "",
-          supplierId: product.supplierId || "",
           imageUrl: product.imageUrl || "",
         }
       : {
@@ -60,8 +56,6 @@ export function ProductForm({ orgId, product, onClose }: ProductFormProps) {
           costPrice: 0,
           currentStock: 0,
           minimumStock: 0,
-          categoryId: "",
-          supplierId: "",
           imageUrl: "",
         },
   });
@@ -140,7 +134,6 @@ export function ProductForm({ orgId, product, onClose }: ProductFormProps) {
             <label className="block text-sm font-medium">Image URL</label>
             <Input {...register("imageUrl")} />
           </div>
-          {/* Category and Supplier can be added later */}
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel

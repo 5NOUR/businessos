@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useProducts, useDeleteProduct } from "@/hooks/use-products";
+import { useProducts, useDeleteProduct, Product } from "@/hooks/use-products";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +21,7 @@ export function ProductsPage() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const navigate = useNavigate();
 
   const { data, isLoading, isError } = useProducts(orgId, {
@@ -42,11 +43,26 @@ export function ProductsPage() {
     return <div className="text-red-500">Error loading products</div>;
   }
 
+  const handleEdit = (product: Product) => {
+    setEditingProduct(product);
+    setShowForm(true);
+  };
+
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setEditingProduct(null);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Products</h1>
-        <Button onClick={() => setShowForm(true)}>
+        <Button
+          onClick={() => {
+            setEditingProduct(null);
+            setShowForm(true);
+          }}
+        >
           <Plus className="h-4 w-4 mr-2" /> Add Product
         </Button>
       </div>
@@ -109,7 +125,7 @@ export function ProductsPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => navigate(`/products/${product.id}/edit`)}
+                      onClick={() => handleEdit(product)}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -156,7 +172,11 @@ export function ProductsPage() {
       </Card>
 
       {showForm && (
-        <ProductForm orgId={orgId} onClose={() => setShowForm(false)} />
+        <ProductForm
+          orgId={orgId}
+          product={editingProduct}
+          onClose={handleCloseForm}
+        />
       )}
     </div>
   );
